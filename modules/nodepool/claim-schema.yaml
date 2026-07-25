@@ -1,0 +1,26 @@
+# Curated claim overlay for the nested nodepool module.
+# Published from the SAME repo tag as the root `ack` claim — they cannot be
+# versioned independently, which is exactly why they live together.
+module: ack-nodepool
+claim_version: v1
+exposed:
+  name:
+    required: true
+    type: string
+    pattern: "^[a-z][a-z0-9-]{2,30}$"
+    description: "Node pool name"
+  cluster:
+    required: true
+    type: string
+    virtual: true # manifest-level reference to an `ack` component; resolved by stack-forge
+    description: "Name of the ack component in this manifest that owns this pool"
+  size:
+    required: true
+    type: string
+    enum: [small, medium, large]
+    virtual: true # resolved via sizing map -> instance_types + system_disk_size
+  desired_size:
+    required: false
+    type: integer
+    default: 2
+    description: "Node count"

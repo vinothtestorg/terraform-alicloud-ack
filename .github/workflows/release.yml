@@ -1,0 +1,52 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+
+# Module binary publish to the TFC private registry is VCS-driven: a one-time
+# setup connects this repo in TFC Registry, then every vX.Y.Z tag auto-publishes.
+# This workflow only handles the *claim schema* half of a release.
+jobs:
+  publish-claim-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - run: pip install --quiet python-hcl2 pyyaml
+
+      - name: Checkout catalog
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/alicloud-service-catalog
+          path: catalog-repo
+          token: ${{ secrets.FORGE_TOKEN }}
+
+      - name: Build + stage claim schema
+        run: python scripts/build_claim_schema.py . catalog-repo/catalog/claim-schemas
+
+      # The catalog's own guard asserts index.json describes the schemas present, so
+      # a PR that adds a schema without rebuilding the index always fails review.
+      # Rebuild it here using the catalog's script, not a copy of its logic.
+      - name: Rebuild the catalog index
+        working-directory: catalog-repo
+        run: python scripts/build_index.py
+
+      - name: Open catalog PR (Governance approves = the D4 gate)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.FORGE_TOKEN }}
+          path: catalog-repo
+          branch: schema/${{ github.event.repository.name }}-${{ github.ref_name }}
+          title: "claim-schema: ${{ github.event.repository.name }} ${{ github.ref_name }}"
+          commit-message: "publish claim schema from ${{ github.repository }}@${{ github.ref_name }}"
+          body: |
+            Automated claim-schema publish from `${{ github.repository }}@${{ github.ref_name }}`.
+
+            Governance review checklist:
+            - [ ] Exposed field set is still the minimum a BU needs
+            - [ ] No raw provider arguments leaked into the claim surface
+            - [ ] `catalog/sizing-maps/` covers every `size` enum value
+            - [ ] `catalog/template-matrix.yaml` pins the matching module version

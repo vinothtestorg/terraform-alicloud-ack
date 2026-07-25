@@ -1,0 +1,22 @@
+# Curated claim overlay for the nested ingress-addon module.
+# Deliberately exposes no `size` — exercises the catalog guard's "no size enum,
+# therefore no sizing map may exist" branch.
+module: ack-ingress
+claim_version: v1
+exposed:
+  name:
+    required: true
+    type: string
+    pattern: "^[a-z][a-z0-9-]{2,30}$"
+    virtual: true # names the component only; the addon name is platform-fixed
+    description: "Logical name for this ingress installation"
+  cluster:
+    required: true
+    type: string
+    virtual: true # manifest-level reference to an `ack` component; resolved by stack-forge
+    description: "Name of the ack component in this manifest to install into"
+  addon_version:
+    required: false
+    type: string
+    default: ""
+    description: "Pin a specific ingress addon version; empty means cluster default"

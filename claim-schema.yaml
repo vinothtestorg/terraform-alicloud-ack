@@ -1,0 +1,20 @@
+# Curated claim overlay for the ROOT module (the cluster itself).
+# Governance-owned. Only fields listed here are BU-settable.
+module: ack
+claim_version: v1
+exposed:
+  name:
+    required: true
+    type: string
+    pattern: "^[a-z][a-z0-9-]{2,30}$"
+    description: "Logical cluster name; env suffix appended automatically"
+  size:
+    required: true
+    type: string
+    enum: [small, medium, large]
+    virtual: true # resolved via sizing map -> cluster_spec
+  kubernetes_version:
+    required: false
+    type: string
+    default: "1.32.1-aliyun.1"
+    description: "Kubernetes version"
