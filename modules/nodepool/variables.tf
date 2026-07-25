@@ -29,3 +29,18 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "image_type" {
+  description = "Node OS image family (catalog-pinned; rotated fleet-wide during upgrades)"
+  type        = string
+}
+
+variable "runtime_name" {
+  description = "Container runtime (catalog-pinned)"
+  type        = string
+}
+
+variable "runtime_version" {
+  description = "Container runtime version (catalog-pinned; must track the control plane)"
+  type        = string
+}

@@ -13,8 +13,5 @@ exposed:
     type: string
     enum: [small, medium, large]
     virtual: true # resolved via sizing map -> cluster_spec
-  kubernetes_version:
-    required: false
-    type: string
-    default: "1.32.1-aliyun.1"
-    description: "Kubernetes version"
+# kubernetes_version is deliberately NOT exposed: an upgrade must be one
+# governance action in the catalog, not a negotiation with every manifest.
